@@ -193,6 +193,8 @@ public class SimpleDNS
                 }
             }
 
+            System.out.println("DNS Packet: " + dnsPacket);
+
             if(run) {
 
                 buildNextQuery(dnsPacket, null);
