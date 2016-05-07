@@ -130,7 +130,7 @@ public class SimpleDNS
                 dnsPacket.setQuery(true);
 
                 //select next server to send request to
-                selectNextServer(dnsPacket, inet);
+                inet = selectNextServer(dnsPacket, inet);
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
@@ -201,15 +201,16 @@ public class SimpleDNS
         socket.close();
     }
 
-    private static void selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
+    private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         for (DNSResourceRecord record : dnsPacket.getAdditional()) {
             if (record.getType() == DNS.TYPE_A) {
                 DNSRdataAddress address = (DNSRdataAddress) record.getData();
                 System.out.println("DNS Address: " + address);
                 inet = InetAddress.getByName(address.toString());
-                break;
+                return inet;
             }
         }
+        return inet;
     }
 
     private static List<DNSResourceRecord> resolveCname(DNS dnsPacket) throws IOException{
