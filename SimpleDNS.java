@@ -155,13 +155,23 @@ public class SimpleDNS
                     for (DNSResourceRecord record : answers) {
                         dnsPacketToSendToHost.addAnswer(record);
                         if(record.getType() == DNS.TYPE_CNAME){
-                            System.out.println("Answer was a CNAME.  Going to resolve recursively");
+                            System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
 
-                            List<DNSQuestion> questions = dnsPacket.getQuestions();
-                            questions.get(0).setName(record.getName());
-                            dnsPacket.setQuestions(questions);
-                            
-                            cname = true;
+                            //search through the records again for a answer to the CNAME
+                            for(DNSResourceRecord r: answers){
+
+                                System.out.println("Checking answers for CNAME resolution.");
+                                if(!r.getName().equals(record.getData().toString())){
+
+                                    System.out.println("CNAME already resolved, sending to host");
+                                    List<DNSQuestion> questions = dnsPacket.getQuestions();
+                                    questions.get(0).setName(record.getName());
+                                    dnsPacket.setQuestions(questions);
+
+                                    cname = true;
+                                }
+                            }
+
                         }
                     }
 
