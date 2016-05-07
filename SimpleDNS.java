@@ -228,13 +228,14 @@ public class SimpleDNS
 
         DNS dnsPacket = new DNS();
         dnsPacket.setQuestions(mdnsPacket.getQuestions());
+        dnsPacket.setAdditional(mdnsPacket.getAdditional());
         dnsPacket.setId(mdnsPacket.getId());
         dnsPacket.setOpcode(mdnsPacket.getOpcode());
         dnsPacket.setRcode(mdnsPacket.getRcode());
         dnsPacket.setQuery(true);
         dnsPacket.setRecursionDesired(true);
         dnsPacket.setRecursionAvailable(true);
-        
+
         buildNextQuery(dnsPacket, null);
 
 
