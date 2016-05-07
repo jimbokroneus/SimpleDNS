@@ -135,19 +135,19 @@ public class SimpleDNS
 
                 //additionals/authorities used to be here
 
+                //add additionals
+                List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+                int numAdds = additionals.size() - 1;
+                System.out.println("Number of Additionals to be added: " + numAdds);
+                for (int i = 0; i < numAdds; i++){
+                    dnsPacketToSendToHost.addAdditional(additionals.get(i));
+                    System.out.println("Adding additional: " + i);
+                }
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
                 if (answers.size() > 0) {
 
-                    //add additionals
-                    List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-                    int numAdds = additionals.size() - 1;
-                    System.out.println("Number of Additionals to be added: " + numAdds);
-                    for (int i = 0; i < numAdds; i++){
-                        dnsPacketToSendToHost.addAdditional(additionals.get(i));
-                        System.out.println("Adding additional: " + i);
-                    }
 
                     //add authorities
                     List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
