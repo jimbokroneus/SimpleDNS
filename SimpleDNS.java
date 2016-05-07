@@ -130,16 +130,7 @@ public class SimpleDNS
                 dnsPacket.setQuery(true);
 
                 //select next server to send request to
-                for (DNSResourceRecord record : dnsPacket.getAdditional()) {
-
-                    //pick the first IPv4
-                    if (record.getType() == DNS.TYPE_A) {
-                        DNSRdataAddress address = (DNSRdataAddress) record.getData();
-                        System.out.println("DNS Address: " + address);
-                        inet = InetAddress.getByName(address.toString());
-                        break;
-                    }
-                }
+                selectNextServer(dnsPacket, inet);
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
@@ -172,58 +163,32 @@ public class SimpleDNS
                                 }
                             }
 
+                            //TODO
                             if(cname) {
-                                List<DNSQuestion> questions = dnsPacket.getQuestions();
-                                questions.get(0).setName(((DNSRdataName) record.getData()).getName());
-                                //questions.get(0).setType(DNS.TYPE_CNAME);
-                                dnsPacket.setQuestions(questions);
-                                dnsPacket.removeAnswer(record);
 
-                                //reset inet to root
-                                inet = InetAddress.getByName(rootIp);
+                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
+
+                                if(resolvedCNAMEAnswer != null) {
+                                    dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
+                                }
                             }
 
                         }
                     }
 
-                    if(!cname) {
-                        //send the return packet to client
-                        sendToClient(dnsPacketToSendToHost, returnToSender);
+                    //send the return packet to client
+                    sendToClient(dnsPacketToSendToHost, returnToSender);
 
-                        //break while loop
-                        run = false;
-                    }
+                    //break while loop
+                    run = false;
+
 
                 }
             }
 
             if(run) {
 
-                System.out.println("Preparing the next query");
-
-                //prepare new query
-                dnsPacket.setQuery(true);
-                dnsPacket.setRecursionAvailable(true);
-
-                //remove additionals
-                List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-                System.out.println("Removing " + additionals.size() + " additionals");
-                int numAdds = additionals.size() - 1;
-                for (int i = 0; i < numAdds; i++) {
-                    dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
-                    // System.out.println("Removing Additional");
-                    //System.out.println(additionals.get(i).toString());
-                }
-
-                //remove authorities
-                List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
-                System.out.println("Removing " + authorities.size() + " authorities");
-                int numAuths = authorities.size();
-                for (int i = 0; i < numAuths; i++) {
-                    dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
-                    //  System.out.println("Removing Authority");
-                    // System.out.println(authorities.get(i).toString());
-                }
+                buildNextQuery(dnsPacket);
 
                 //System.out.println(dnsPacket.toString());
 
@@ -237,6 +202,108 @@ public class SimpleDNS
         System.out.println("Close socket");
 
         socket.close();
+    }
+
+    private static void selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
+        for (DNSResourceRecord record : dnsPacket.getAdditional()) {
+            if (record.getType() == DNS.TYPE_A) {
+                DNSRdataAddress address = (DNSRdataAddress) record.getData();
+                System.out.println("DNS Address: " + address);
+                inet = InetAddress.getByName(address.toString());
+                break;
+            }
+        }
+    }
+
+    private static List<DNSResourceRecord> resolveCname(DNS dnsPacket) throws IOException{
+        InetAddress inet = InetAddress.getByName(rootIp);
+        DatagramSocket socket = new DatagramSocket();
+
+        byte buff[] = new byte[MAX_PACKET_SIZE];
+        boolean run = true;
+        int ttl = 100;
+
+        System.out.println(inet);
+        //System.out.println(socket.getRemoteSocketAddress().toString());
+
+        while(run && ttl>0) {
+            System.out.println("Start loop***************************************************************");
+            System.out.println("Sending packet:");
+            System.out.println(dnsPacket.toString());
+
+            //Send Packet
+            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(), 0, dnsPacket.getLength(), inet, DNS_PORT);
+            socket.send(nQuery);
+
+            //wait for the packet to be returned
+            socket.receive(new DatagramPacket(buff, buff.length));
+            dnsPacket = DNS.deserialize(buff, buff.length);
+
+            System.out.println("Recieved packet: " + dnsPacket.toString());
+
+
+            System.out.println("Recursion Desired");
+            dnsPacket.setQuery(true);
+
+            //select next server to send request to
+            selectNextServer(dnsPacket, inet);
+
+
+            //add answers and send
+            List<DNSResourceRecord> answers = dnsPacket.getAnswers();
+            if (answers.size() > 0) {
+                return answers;
+            }
+
+
+            if (run) {
+
+                buildNextQuery(dnsPacket);
+                //System.out.println(dnsPacket.toString());
+
+                //decrement ttl
+                ttl--;
+
+                System.out.println("TTL: " + ttl + "Run: " + run);
+            }
+
+        }
+
+
+        System.out.println("Close socket");
+
+        socket.close();
+
+        return null;
+    }
+
+    private static void buildNextQuery(DNS dnsPacket) {
+        System.out.println("Preparing the next query");
+
+        //prepare new query
+        dnsPacket.setQuery(true);
+        dnsPacket.setRecursionAvailable(true);
+
+        //remove additionals
+        List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+        System.out.println("Removing " + additionals.size() + " additionals");
+        int numAdds = additionals.size() - 1;
+        for (int i = 0; i < numAdds; i++) {
+            dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
+            // System.out.println("Removing Additional");
+            //System.out.println(additionals.get(i).toString());
+        }
+
+        //remove authorities
+        List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
+        System.out.println("Removing " + authorities.size() + " authorities");
+        int numAuths = authorities.size();
+        for (int i = 0; i < numAuths; i++) {
+            dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
+            //  System.out.println("Removing Authority");
+            // System.out.println(authorities.get(i).toString());
+        }
+
     }
 
     private static void addAdditionalsAndAuths(DNS dnsPacket, DNS dnsPacketToSendToHost){
