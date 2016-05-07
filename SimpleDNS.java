@@ -163,6 +163,8 @@ public class SimpleDNS
                             //TODO
                             if(cname) {
 
+                                buildNextQuery(dnsPacket, record.getData().toString());
+
                                 List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
 
                                 if(resolvedCNAMEAnswer != null) {
@@ -185,7 +187,7 @@ public class SimpleDNS
 
             if(run) {
 
-                buildNextQuery(dnsPacket, false);
+                buildNextQuery(dnsPacket, null);
 
                 //System.out.println(dnsPacket.toString());
 
@@ -224,7 +226,7 @@ public class SimpleDNS
         System.out.println(inet);
         //System.out.println(socket.getRemoteSocketAddress().toString());
 
-        buildNextQuery(dnsPacket, true);
+        buildNextQuery(dnsPacket, null);
 
 
         while(run && ttl>0) {
@@ -259,7 +261,7 @@ public class SimpleDNS
 
             if (run) {
 
-                buildNextQuery(dnsPacket, false);
+                buildNextQuery(dnsPacket, null);
                 //System.out.println(dnsPacket.toString());
 
                 //decrement ttl
@@ -278,7 +280,7 @@ public class SimpleDNS
         return null;
     }
 
-    private static void buildNextQuery(DNS dnsPacket, boolean removeAnswers) {
+    private static void buildNextQuery(DNS dnsPacket, String cname) {
         System.out.println("Preparing the next query");
 
         //prepare new query
@@ -305,7 +307,13 @@ public class SimpleDNS
             // System.out.println(authorities.get(i).toString());
         }
 
-        if(removeAnswers){
+        if(cname != null){
+
+            //set question
+            DNSQuestion question = dnsPacket.getQuestions().get(0);
+            question.setName(cname);
+
+            //remove answers
             List<DNSResourceRecord> answers = dnsPacket.getAnswers();
             int numAns = answers.size();
             for (int i = 0; i < numAns; i++) {
