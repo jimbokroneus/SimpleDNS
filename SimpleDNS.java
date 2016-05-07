@@ -236,11 +236,13 @@ public class SimpleDNS
         dnsPacket.setRecursionDesired(true);
         dnsPacket.setRecursionAvailable(true);
 
+        System.out.println("DNS clone: " + dnsPacket);
+
         buildNextQuery(dnsPacket, null);
 
 
         while(run && ttl>0) {
-            System.out.println("Start loop***************************************************************");
+            System.out.println("Start loop in resolveCname***************************************************************");
             System.out.println("Sending packet:");
             System.out.println(dnsPacket.toString());
 
