@@ -169,13 +169,13 @@ public class SimpleDNS
 
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
             for (int i = 0; i < additionals.size() - 1; i++){
-                dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
+                dnsPacket.removeAdditional(additionals.get(i));
             }
 
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
             for (int i = 0; i < authorities.size(); i++){
-                dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
+                dnsPacket.removeAuthority(additionals.get(i));
             }
 	    
             ttl--;
