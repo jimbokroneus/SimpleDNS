@@ -96,7 +96,7 @@ public class SimpleDNS
         DatagramSocket socket = new DatagramSocket();
         //socket.connect(inet, DNS_PORT);
         byte buff[] = new byte[MAX_PACKET_SIZE];
-        DNS sendToHost = dnsPacket;
+        DNS dnsPacketToSendToHost = dnsPacket;
 
         boolean run = true;
         int ttl = 100;
@@ -133,28 +133,30 @@ public class SimpleDNS
                     }
                 }
 
-                //add additionals
-                List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-                for (int i = 0; i < additionals.size() - 1; i++){
-                    sendToHost.addAdditional(additionals.get(i));
-                }
-
-                //add authorities
-                List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
-                for (int i = 0; i < authorities.size(); i++){
-                    sendToHost.addAuthority(authorities.get(i));
-                }
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
                 if (answers.size() > 0) {
 
+
+                    //add additionals
+                    List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+                    for (int i = 0; i < additionals.size() - 1; i++){
+                        dnsPacketToSendToHost.addAdditional(additionals.get(i));
+                    }
+
+                    //add authorities
+                    List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
+                    for (int i = 0; i < authorities.size(); i++){
+                        dnsPacketToSendToHost.addAuthority(authorities.get(i));
+                    }
+
                     for (DNSResourceRecord record : answers) {
-                        sendToHost.addAnswer(record);
+                        dnsPacketToSendToHost.addAnswer(record);
                     }
 
                     //send to lcient
-                    sendToClient(sendToHost, returnToSender);
+                    sendToClient(dnsPacketToSendToHost, returnToSender);
 
                     //break while loop
                     run = false;
