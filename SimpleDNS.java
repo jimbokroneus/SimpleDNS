@@ -105,7 +105,7 @@ public class SimpleDNS
         //System.out.println(socket.getRemoteSocketAddress().toString());
 
         while(run && ttl>0) {
-            System.out.println("Start loop");
+            System.out.println("Start loop***************************************************************");
             DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength(), inet, DNS_PORT);
             socket.send(nQuery);
 
@@ -145,7 +145,7 @@ public class SimpleDNS
                     int numAdds = additionals.size() - 1;
                     System.out.println("Number of Additionals to be added: " + numAdds);
                     for (int i = 0; i < numAdds; i++){
-                        dnsPacketToSendToHost.addAdditional(dnsPacket.getAdditional().get(i));
+                        dnsPacketToSendToHost.addAdditional(additionals.get(i));
                         System.out.println("Adding additional: " + i);
                     }
 
@@ -154,7 +154,7 @@ public class SimpleDNS
                     int numAuths = authorities.size();
                     System.out.println("Number of Authorities to be added: " + numAuths);
                     for (int i = 0; i < numAuths; i++){
-                        dnsPacketToSendToHost.addAuthority(dnsPacket.getAuthorities().get(i));
+                        dnsPacketToSendToHost.addAuthority(authorities.get(i));
                         System.out.println("Adding authority: " + i);
                     }
 
@@ -162,7 +162,7 @@ public class SimpleDNS
                         dnsPacketToSendToHost.addAnswer(record);
                     }
 
-                    //send to lcient
+                    //send to client
                     sendToClient(dnsPacketToSendToHost, returnToSender);
 
                     //break while loop
@@ -177,14 +177,14 @@ public class SimpleDNS
             dnsPacket.setQuery(true);
             dnsPacket.setRecursionAvailable(true);
 
-            System.out.println(dnsPacket.toString());
+            //System.out.println(dnsPacket.toString());
 
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
             System.out.println(additionals.size());
             int numAdds = additionals.size() - 1;
             for (int i = 0; i < numAdds; i++){
                 dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
-                System.out.println("Removing Additional");
+               // System.out.println("Removing Additional");
                 //System.out.println(additionals.get(i).toString());
             }
 
@@ -194,11 +194,11 @@ public class SimpleDNS
             int numAuths = authorities.size();
             for (int i = 0; i < numAuths; i++){
                 dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
-                System.out.println("Removing Authority");
+              //  System.out.println("Removing Authority");
                // System.out.println(authorities.get(i).toString());
             }
 
-            System.out.println(dnsPacket.toString());
+            //System.out.println(dnsPacket.toString());
             ttl--;
             System.out.println("TTL: " + ttl + "Run: " + run);
         }
