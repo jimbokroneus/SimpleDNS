@@ -105,6 +105,7 @@ public class SimpleDNS
 
         while(run && ttl>0) {
             System.out.println("Start loop");
+            System.out.println(dnsPacket.toString());
             DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength(), inet, DNS_PORT);
             socket.send(nQuery);
 
