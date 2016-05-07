@@ -185,7 +185,7 @@ public class SimpleDNS
 
             if(run) {
 
-                buildNextQuery(dnsPacket);
+                buildNextQuery(dnsPacket, false);
 
                 //System.out.println(dnsPacket.toString());
 
@@ -259,7 +259,7 @@ public class SimpleDNS
 
             if (run) {
 
-                buildNextQuery(dnsPacket);
+                buildNextQuery(dnsPacket, false);
                 //System.out.println(dnsPacket.toString());
 
                 //decrement ttl
