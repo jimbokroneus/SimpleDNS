@@ -143,15 +143,19 @@ public class SimpleDNS
                     //add additionals
                     List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
                     int numAdds = additionals.size() - 1;
+                    System.out.println("Number of Additionals to be added: " + numAdds);
                     for (int i = 0; i < numAdds; i++){
                         dnsPacketToSendToHost.addAdditional(additionals.get(i));
+                        System.out.println("Adding additional: " + i);
                     }
 
                     //add authorities
                     List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
                     int numAuths = authorities.size();
+                    System.out.println("Number of Authorities to be added: " + numAuths);
                     for (int i = 0; i < numAuths; i++){
                         dnsPacketToSendToHost.addAuthority(authorities.get(i));
+                        System.out.println("Adding authority: " + i);
                     }
 
                     for (DNSResourceRecord record : answers) {
