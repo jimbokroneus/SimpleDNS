@@ -162,16 +162,17 @@ public class SimpleDNS
                                 System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
 
                                 if(r.getName().equals(record.getData().toString())){
+                                    System.out.println("CNAME already resolved, sending to host");
                                     cname = false;
                                 }
                             }
 
                             if(cname) {
-                                System.out.println("CNAME already resolved, sending to host");
                                 List<DNSQuestion> questions = dnsPacket.getQuestions();
                                 questions.get(0).setName(((DNSRdataName) record.getData()).getName());
                                 questions.get(0).setType(DNS.TYPE_CNAME);
                                 dnsPacket.setQuestions(questions);
+                                dnsPacket.removeAnswer(record);
 
                                 //reset inet to root
                                 inet = InetAddress.getByName(rootIp);
