@@ -173,18 +173,18 @@ public class SimpleDNS
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
             System.out.println(additionals.size());
             for (int i = 0; i < additionals.size() - 1; i++){
-                dnsPacket.removeAdditional(additionals.get(i));
+                dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
                 System.out.println("Removing Additional");
-                System.out.println(additionals.get(i).toString());
+                //System.out.println(additionals.get(i).toString());
             }
 
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
             System.out.println(authorities.size());
             for (int i = 0; i < authorities.size(); i++){
-                dnsPacket.removeAuthority(authorities.get(i));
+                dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
                 System.out.println("Removing Authority");
-                System.out.println(authorities.get(i).toString());
+               // System.out.println(authorities.get(i).toString());
             }
 
             System.out.println(dnsPacket.toString());
