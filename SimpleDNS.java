@@ -244,7 +244,7 @@ public class SimpleDNS
             dnsPacket.setQuery(true);
 
             //select next server to send request to
-            selectNextServer(dnsPacket, inet);
+            inet = selectNextServer(dnsPacket, inet);
 
 
             //add answers and send
