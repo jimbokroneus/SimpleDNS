@@ -171,6 +171,7 @@ public class SimpleDNS
                                 buildNextQuery(dnsPacket, record.getData().toString());
 
                                 List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
+                                System.out.println("resolveCname responded with: " + resolvedCNAMEAnswer);
 
                                 if(resolvedCNAMEAnswer != null) {
                                     dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
