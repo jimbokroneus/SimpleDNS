@@ -164,14 +164,14 @@ public class SimpleDNS
                             }
 
                             //TODO
-                            if(cname) {
-
-                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
-
-                                if(resolvedCNAMEAnswer != null) {
-                                    dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
-                                }
-                            }
+//                            if(cname) {
+//
+//                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
+//
+//                                if(resolvedCNAMEAnswer != null) {
+//                                    dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
+//                                }
+//                            }
 
                         }
                     }
