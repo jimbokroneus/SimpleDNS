@@ -101,7 +101,7 @@ public class SimpleDNS
         int ttl = 100;
 
         System.out.println(inet);
-        System.out.println(socket.getRemoteSocketAddress().toString());
+        //System.out.println(socket.getRemoteSocketAddress().toString());
 
         while(run && ttl>0) {
             System.out.println("Start loop");
