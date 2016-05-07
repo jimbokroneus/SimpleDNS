@@ -133,21 +133,24 @@ public class SimpleDNS
                     }
                 }
 
+                //additionals/authorities used to be here
+
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
                 if (answers.size() > 0) {
 
-
                     //add additionals
                     List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-                    for (int i = 0; i < additionals.size() - 1; i++){
+                    int numAdds = additionals.size() - 1;
+                    for (int i = 0; i < numAdds; i++){
                         dnsPacketToSendToHost.addAdditional(additionals.get(i));
                     }
 
                     //add authorities
                     List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
-                    for (int i = 0; i < authorities.size(); i++){
+                    int numAuths = authorities.size();
+                    for (int i = 0; i < numAuths; i++){
                         dnsPacketToSendToHost.addAuthority(authorities.get(i));
                     }
 
