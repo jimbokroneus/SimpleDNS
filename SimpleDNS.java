@@ -105,7 +105,6 @@ public class SimpleDNS
 
         while(run && ttl>0) {
             System.out.println("Start loop");
-            System.out.println(dnsPacket.toString());
             DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength(), inet, DNS_PORT);
             socket.send(nQuery);
 
@@ -168,7 +167,10 @@ public class SimpleDNS
             dnsPacket.setQuery(true);
             dnsPacket.setRecursionAvailable(true);
 
+            System.out.println(dnsPacket.toString());
+
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+            System.out.println(additionals.size());
             for (int i = 0; i < additionals.size() - 1; i++){
                 dnsPacket.removeAdditional(additionals.get(i));
                 System.out.println("Removing Additional");
@@ -177,12 +179,14 @@ public class SimpleDNS
 
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
+            System.out.println(authorities.size());
             for (int i = 0; i < authorities.size(); i++){
                 dnsPacket.removeAuthority(authorities.get(i));
                 System.out.println("Removing Authority");
                 System.out.println(authorities.get(i).toString());
             }
 
+            System.out.println(dnsPacket.toString());
             ttl--;
             System.out.println("TTL: " + ttl + "Run: " + run);
         }
