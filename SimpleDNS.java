@@ -172,7 +172,8 @@ public class SimpleDNS
 
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
             System.out.println(additionals.size());
-            for (int i = 0; i < additionals.size() - 1; i++){
+            int numAdds = additionals.size() - 1;
+            for (int i = 0; i < numAdds; i++){
                 dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
                 System.out.println("Removing Additional");
                 //System.out.println(additionals.get(i).toString());
@@ -181,7 +182,8 @@ public class SimpleDNS
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
             System.out.println(authorities.size());
-            for (int i = 0; i < authorities.size(); i++){
+            int numAuths = authorities.size();
+            for (int i = 0; i < numAuths; i++){
                 dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
                 System.out.println("Removing Authority");
                // System.out.println(authorities.get(i).toString());
