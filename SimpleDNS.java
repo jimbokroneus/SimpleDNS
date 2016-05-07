@@ -144,33 +144,33 @@ public class SimpleDNS
 
                         dnsPacketToSendToHost.addAnswer(record);
 
-//                        if(record.getType() == DNS.TYPE_CNAME){
-//                            System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
-//
-//                            cname = true;
-//                            //search through the records again for a answer to the CNAME
-//                            for(DNSResourceRecord r: answers){
-//
-//                                System.out.println("Checking answers for CNAME resolution.");
-//                                System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
-//
-//                                if(r.getName().equals(record.getData().toString())){
-//                                    System.out.println("CNAME already resolved, sending to host");
-//                                    cname = false;
-//                                }
-//                            }
-//
-//                            //TODO
-//                            if(cname) {
-//
-//                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
-//
-//                                if(resolvedCNAMEAnswer != null) {
-//                                    dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
-//                                }
-//                            }
-//
-//                        }
+                        if(record.getType() == DNS.TYPE_CNAME){
+                            System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
+
+                            cname = true;
+                            //search through the records again for a answer to the CNAME
+                            for(DNSResourceRecord r: answers){
+
+                                System.out.println("Checking answers for CNAME resolution.");
+                                System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
+
+                                if(r.getName().equals(record.getData().toString())){
+                                    System.out.println("CNAME already resolved, sending to host");
+                                    cname = false;
+                                }
+                            }
+
+                            //TODO
+                            if(cname) {
+
+                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
+
+                                if(resolvedCNAMEAnswer != null) {
+                                    dnsPacket.getAnswers().addAll(resolvedCNAMEAnswer);
+                                }
+                            }
+
+                        }
                     }
 
                     //send the return packet to client
