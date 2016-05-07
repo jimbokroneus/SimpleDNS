@@ -175,7 +175,7 @@ public class SimpleDNS
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
             for (int i = 0; i < authorities.size(); i++){
-                dnsPacket.removeAuthority(additionals.get(i));
+                dnsPacket.removeAuthority(authorities.get(i));
             }
 	    
             ttl--;
