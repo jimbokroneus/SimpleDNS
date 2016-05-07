@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleDNS
@@ -78,6 +79,7 @@ public class SimpleDNS
         serverSocket.close();
     }
 
+    private static List<DNSResourceRecord> originalAdditionals;
     /**
      * Handles Packets in a recursive manner.
      * It handles single question cases.
@@ -100,6 +102,9 @@ public class SimpleDNS
 
         System.out.println(inet);
         //System.out.println(socket.getRemoteSocketAddress().toString());
+
+        originalAdditionals = new ArrayList<DNSResourceRecord>();
+        originalAdditionals.addAll(dnsPacket.getAdditional());
 
         while(run && ttl>0) {
             System.out.println("Start loop***************************************************************");
@@ -228,7 +233,7 @@ public class SimpleDNS
 
         DNS dnsPacket = new DNS();
         dnsPacket.setQuestions(mdnsPacket.getQuestions());
-        dnsPacket.setAdditional(mdnsPacket.getAdditional());
+        dnsPacket.setAdditional(originalAdditionals);
         dnsPacket.setId(mdnsPacket.getId());
         dnsPacket.setOpcode(mdnsPacket.getOpcode());
         dnsPacket.setRcode(mdnsPacket.getRcode());
