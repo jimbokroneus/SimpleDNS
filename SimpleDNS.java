@@ -159,6 +159,8 @@ public class SimpleDNS
                             for(DNSResourceRecord r: answers){
 
                                 System.out.println("Checking answers for CNAME resolution.");
+                                System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
+                                System.exit(0);
                                 if(r.getName().equals(record.getData().toString())){
                                     cname = false;
                                 }
