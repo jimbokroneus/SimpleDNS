@@ -26,6 +26,7 @@ public class SimpleDNS
 
     public static void main(String[] args)
     {
+	//conventions
         System.out.println("Hello, DNS!");
         boolean run = true;
 
