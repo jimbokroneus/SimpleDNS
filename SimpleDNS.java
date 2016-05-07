@@ -23,7 +23,7 @@ public class SimpleDNS
 
     public static void main(String[] args)
     {
-	//conventions
+        //conventions
         System.out.println("Hello, DNS!");
         boolean run = true;
 
@@ -154,19 +154,21 @@ public class SimpleDNS
                         if(record.getType() == DNS.TYPE_CNAME){
                             System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
 
+                            cname = true;
                             //search through the records again for a answer to the CNAME
                             for(DNSResourceRecord r: answers){
 
                                 System.out.println("Checking answers for CNAME resolution.");
-                                if(!r.getName().equals(record.getData().toString())){
-
-                                    System.out.println("CNAME already resolved, sending to host");
-                                    List<DNSQuestion> questions = dnsPacket.getQuestions();
-                                    questions.get(0).setName(((DNSRdataName) record.getData()).getName());
-                                    dnsPacket.setQuestions(questions);
-
-                                    cname = true;
+                                if(r.getName().equals(record.getData().toString())){
+                                    cname = false;
                                 }
+                            }
+
+                            if(cname) {
+                                System.out.println("CNAME already resolved, sending to host");
+                                List<DNSQuestion> questions = dnsPacket.getQuestions();
+                                questions.get(0).setName(((DNSRdataName) record.getData()).getName());
+                                dnsPacket.setQuestions(questions);
                             }
 
                         }
