@@ -1,9 +1,6 @@
 package edu.wisc.cs.sdn.simpledns;
 
-import edu.wisc.cs.sdn.simpledns.packet.DNS;
-import edu.wisc.cs.sdn.simpledns.packet.DNSQuestion;
-import edu.wisc.cs.sdn.simpledns.packet.DNSRdataAddress;
-import edu.wisc.cs.sdn.simpledns.packet.DNSResourceRecord;
+import edu.wisc.cs.sdn.simpledns.packet.*;
 
 
 import java.io.BufferedReader;
@@ -165,7 +162,7 @@ public class SimpleDNS
 
                                     System.out.println("CNAME already resolved, sending to host");
                                     List<DNSQuestion> questions = dnsPacket.getQuestions();
-                                    questions.get(0).setName(record.getName());
+                                    questions.get(0).setName(((DNSRdataName) record.getData()).getName());
                                     dnsPacket.setQuestions(questions);
 
                                     cname = true;
