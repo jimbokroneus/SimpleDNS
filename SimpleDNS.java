@@ -139,20 +139,17 @@ public class SimpleDNS
 
                     addAdditionalsAndAuths(dnsPacket, dnsPacketToSendToHost);
 
-                    //add answers to the return packet
-                    for (DNSResourceRecord record : answers) {
-                        dnsPacketToSendToHost.addAnswer(record);
-                    }
-
                     //loop through all recorded answers checking for unresolved CNAMEs
-                    for (DNSResourceRecord record : dnsPacketToSendToHost.getAnswers()) {
+                    for (DNSResourceRecord record : answers) {
+
+                        dnsPacketToSendToHost.addAnswer(record);
 
                         if(record.getType() == DNS.TYPE_CNAME){
                             System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
 
                             cname = true;
                             //search through the records again for a answer to the CNAME
-                            for(DNSResourceRecord r: dnsPacketToSendToHost.getAnswers()){
+                            for(DNSResourceRecord r: answers){
 
                                 System.out.println("Checking answers for CNAME resolution.");
                                 System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
