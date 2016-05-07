@@ -108,7 +108,7 @@ public class SimpleDNS
 
         while(run && ttl>0) {
             System.out.println("Start loop***************************************************************");
-            System.out.println("Sending packet:");
+            System.out.println("Sending packet: " + inet);
             System.out.println(dnsPacket.toString());
 
             //Send Packet
