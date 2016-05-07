@@ -207,7 +207,7 @@ public class SimpleDNS
                 DNSRdataAddress address = (DNSRdataAddress) record.getData();
                 System.out.println("DNS Address: " + address);
                 inet = InetAddress.getByName(address.toString());
-                return inet;
+                break;
             }
         }
         return inet;
