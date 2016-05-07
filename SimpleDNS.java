@@ -155,6 +155,12 @@ public class SimpleDNS
                     for (DNSResourceRecord record : answers) {
                         dnsPacketToSendToHost.addAnswer(record);
                         if(record.getType() == DNS.TYPE_CNAME){
+                            System.out.println("Answer was a CNAME.  Going to resolve recursively");
+
+                            List<DNSQuestion> questions = dnsPacket.getQuestions();
+                            questions.get(0).setName(record.getName());
+                            dnsPacket.setQuestions(questions);
+                            
                             cname = true;
                         }
                     }
