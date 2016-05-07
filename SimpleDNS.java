@@ -106,7 +106,7 @@ public class SimpleDNS
 
         while(run && ttl>0) {
             System.out.println("Start loop***************************************************************");
-            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength(), inet, DNS_PORT);
+            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(), 0, dnsPacket.getLength(), inet, DNS_PORT);
             socket.send(nQuery);
 
             System.out.println("Sending packet:");
@@ -128,35 +128,21 @@ public class SimpleDNS
                     if (record.getType() == DNS.TYPE_A || record.getType() == DNS.TYPE_AAAA) {
 
                         DNSRdataAddress address = (DNSRdataAddress) record.getData();
+                        System.out.println("DNS Address: " + address);
                         inet = InetAddress.getByName(address.toString());
                         break;
                     }
                 }
 
                 //additionals/authorities used to be here
-                //add additionals
-                List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-                int numAdds = additionals.size() - 1;
-                System.out.println("Number of Additionals to be added: " + numAdds);
-                for (int i = 0; i < numAdds; i++){
-                    dnsPacketToSendToHost.addAdditional(additionals.get(i));
-                    System.out.println("Adding additional: " + i);
-                }
 
-                //add authorities
-                List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
-                int numAuths = authorities.size();
-                System.out.println("Number of Authorities to be added: " + numAuths);
-                for (int i = 0; i < numAuths; i++){
-                    dnsPacketToSendToHost.addAuthority(authorities.get(i));
-                    System.out.println("Adding authority: " + i);
-                }
 
 
                 //add answers and send
                 List<DNSResourceRecord> answers = dnsPacket.getAnswers();
                 if (answers.size() > 0) {
 
+                    addAdditionalsAndAuths(dnsPacket, dnsPacketToSendToHost);
 
 
                     for (DNSResourceRecord record : answers) {
@@ -181,7 +167,7 @@ public class SimpleDNS
             //System.out.println(dnsPacket.toString());
 
             List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-            System.out.println(additionals.size());
+            System.out.println("Removing " + additionals.size() + " additionals");
             int numAdds = additionals.size() - 1;
             for (int i = 0; i < numAdds; i++){
                 dnsPacket.removeAdditional(dnsPacket.getAdditional().get(0));
@@ -191,7 +177,7 @@ public class SimpleDNS
 
             //add authorities
             List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
-            System.out.println(authorities.size());
+            System.out.println("Removing " + authorities.size() + " authorities");
             int numAuths = authorities.size();
             for (int i = 0; i < numAuths; i++){
                 dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
@@ -207,6 +193,26 @@ public class SimpleDNS
         System.out.println("Close socket");
 
         socket.close();
+    }
+
+    private static void addAdditionalsAndAuths(DNS dnsPacket, DNS dnsPacketToSendToHost){
+        //add additionals
+        List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+        int numAdds = additionals.size() - 1;
+        System.out.println("Number of Additionals to be added: " + numAdds);
+        for (int i = 0; i < numAdds; i++){
+            dnsPacketToSendToHost.addAdditional(additionals.get(i));
+            System.out.println("Adding additional: " + i);
+        }
+
+        //add authorities
+        List<DNSResourceRecord> authorities = dnsPacket.getAuthorities();
+        int numAuths = authorities.size();
+        System.out.println("Number of Authorities to be added: " + numAuths);
+        for (int i = 0; i < numAuths; i++){
+            dnsPacketToSendToHost.addAuthority(authorities.get(i));
+            System.out.println("Adding authority: " + i);
+        }
     }
 
     private static void sendToClient(DNS dnsPacket, DatagramPacket returnToSener) throws IOException{
