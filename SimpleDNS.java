@@ -92,7 +92,7 @@ public class SimpleDNS
     private static void handlePacketRecursively(DNS dnsPacket, DatagramPacket returnToSender) throws IOException{
 
         InetAddress inet = InetAddress.getByName(rootIp);
-        DatagramSocket socket = new DatagramSocket(DNS_PORT);
+        DatagramSocket socket = new DatagramSocket();
         //socket.connect(inet, DNS_PORT);
         byte buff[] = new byte[MAX_PACKET_SIZE];
         DNS sendToHost = dnsPacket;
@@ -105,7 +105,7 @@ public class SimpleDNS
 
         while(run && ttl>0) {
             System.out.println("Start loop");
-            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength()); //, inet, DNS_PORT);
+            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength(), inet, DNS_PORT);
             socket.send(nQuery);
 
             System.out.println("Sending packet:");
