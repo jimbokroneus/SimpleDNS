@@ -224,6 +224,9 @@ public class SimpleDNS
         System.out.println(inet);
         //System.out.println(socket.getRemoteSocketAddress().toString());
 
+        buildNextQuery(dnsPacket, true);
+
+
         while(run && ttl>0) {
             System.out.println("Start loop***************************************************************");
             System.out.println("Sending packet:");
@@ -275,7 +278,7 @@ public class SimpleDNS
         return null;
     }
 
-    private static void buildNextQuery(DNS dnsPacket) {
+    private static void buildNextQuery(DNS dnsPacket, boolean removeAnswers) {
         System.out.println("Preparing the next query");
 
         //prepare new query
@@ -300,6 +303,18 @@ public class SimpleDNS
             dnsPacket.removeAuthority(dnsPacket.getAuthorities().get(0));
             //  System.out.println("Removing Authority");
             // System.out.println(authorities.get(i).toString());
+        }
+
+        if(removeAnswers){
+            List<DNSResourceRecord> answers = dnsPacket.getAnswers();
+            int numAns = answers.size();
+            for (int i = 0; i < numAns; i++) {
+                dnsPacket.removeAnswer(dnsPacket.getAnswers().get(0));
+                //  System.out.println("Removing Authority");
+                // System.out.println(authorities.get(i).toString());
+            }
+
+
         }
 
     }
