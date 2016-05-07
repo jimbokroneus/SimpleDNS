@@ -151,6 +151,11 @@ public class SimpleDNS
                     //add answers to the return packet
                     for (DNSResourceRecord record : answers) {
                         dnsPacketToSendToHost.addAnswer(record);
+                    }
+
+                    //loop through all recorded answers checking for unresolved CNAMEs
+                    for (DNSResourceRecord record : dnsPacketToSendToHost.getAnswers()) {
+
                         if(record.getType() == DNS.TYPE_CNAME){
                             System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
 
@@ -188,6 +193,7 @@ public class SimpleDNS
                         //break while loop
                         run = false;
                     }
+
                 }
             }
 
