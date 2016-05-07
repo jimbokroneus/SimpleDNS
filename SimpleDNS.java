@@ -92,36 +92,36 @@ public class SimpleDNS
     private static void handlePacketRecursively(DNS dnsPacket, DatagramPacket returnToSender) throws IOException{
 
         InetAddress inet = InetAddress.getByName(rootIp);
-        DatagramSocket socket = new DatagramSocket();
-        socket.connect(inet, DNS_PORT);
+        DatagramSocket socket = new DatagramSocket(DNS_PORT);
+        //socket.connect(inet, DNS_PORT);
         byte buff[] = new byte[MAX_PACKET_SIZE];
         DNS sendToHost = dnsPacket;
 
         boolean run = true;
         int ttl = 100;
 
-	System.out.println(inet);
-	System.out.println(socket.getRemoteSocketAddress().toString());
+        System.out.println(inet);
+        System.out.println(socket.getRemoteSocketAddress().toString());
 
         while(run && ttl>0) {
-	    System.out.println("Start loop");
+            System.out.println("Start loop");
             DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(),0, dnsPacket.getLength()); //, inet, DNS_PORT);
             socket.send(nQuery);
 
-	    System.out.println("Sending packet:");
-	    System.out.println(dnsPacket.toString());
+            System.out.println("Sending packet:");
+            System.out.println(dnsPacket.toString());
 
-	    System.out.println("Recieve packet:");
+            System.out.println("Recieve packet:");
             socket.receive(new DatagramPacket(buff, buff.length));
             dnsPacket = DNS.deserialize(buff, buff.length);
 
-	    System.out.println(dnsPacket.toString());
+            System.out.println(dnsPacket.toString());
 
             if (!dnsPacket.isRecursionDesired()) {
-		System.out.println("No recursion desired");
+                System.out.println("No recursion desired");
                 //send to client
             } else {
-		System.out.println("Recursion");
+                System.out.println("Recursion");
                 dnsPacket.setQuery(true);
                 for (DNSResourceRecord record : dnsPacket.getAdditional()) {
                     if (record.getType() == DNS.TYPE_A || record.getType() == DNS.TYPE_AAAA) {
@@ -161,7 +161,7 @@ public class SimpleDNS
             }
 
 
-	    System.out.println("Prepare for new query");
+            System.out.println("Prepare for new query");
 
             //prepare new query
             dnsPacket.setQuery(true);
@@ -177,12 +177,12 @@ public class SimpleDNS
             for (int i = 0; i < authorities.size(); i++){
                 dnsPacket.removeAuthority(authorities.get(i));
             }
-	    
+
             ttl--;
-	    System.out.println("TTL: " + ttl + "Run: " + run);
+            System.out.println("TTL: " + ttl + "Run: " + run);
         }
 
-	System.out.println("Close socket");
+        System.out.println("Close socket");
 
         socket.close();
     }
