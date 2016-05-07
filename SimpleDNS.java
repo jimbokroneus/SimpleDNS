@@ -125,10 +125,14 @@ public class SimpleDNS
                 run = false;
 
             } else {
+
                 System.out.println("Recursion");
                 dnsPacket.setQuery(true);
+                //select next server to send request to
                 for (DNSResourceRecord record : dnsPacket.getAdditional()) {
-                    if (record.getType() == DNS.TYPE_A || record.getType() == DNS.TYPE_AAAA) {
+
+                    //only handle IPv4
+                    if (record.getType() == DNS.TYPE_A) {
 
                         DNSRdataAddress address = (DNSRdataAddress) record.getData();
                         System.out.println("DNS Address: " + address);
