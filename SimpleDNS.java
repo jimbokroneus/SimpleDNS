@@ -215,7 +215,7 @@ public class SimpleDNS
         return inet;
     }
 
-    private static List<DNSResourceRecord> resolveCname(DNS dnsPacket) throws IOException{
+    private static List<DNSResourceRecord> resolveCname(DNS mdnsPacket) throws IOException{
         InetAddress inet = InetAddress.getByName(rootIp);
         DatagramSocket socket = new DatagramSocket();
 
@@ -226,6 +226,15 @@ public class SimpleDNS
         System.out.println(inet);
         //System.out.println(socket.getRemoteSocketAddress().toString());
 
+        DNS dnsPacket = new DNS();
+        dnsPacket.setQuestions(mdnsPacket.getQuestions());
+        dnsPacket.setId(mdnsPacket.getId());
+        dnsPacket.setOpcode(mdnsPacket.getOpcode());
+        dnsPacket.setRcode(mdnsPacket.getRcode());
+        dnsPacket.setQuery(true);
+        dnsPacket.setRecursionDesired(true);
+        dnsPacket.setRecursionAvailable(true);
+        
         buildNextQuery(dnsPacket, null);
 
 
