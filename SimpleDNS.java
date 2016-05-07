@@ -161,7 +161,7 @@ public class SimpleDNS
 
                             cname = true;
                             //search through the records again for a answer to the CNAME
-                            for(DNSResourceRecord r: answers){
+                            for(DNSResourceRecord r: dnsPacketToSendToHost.getAnswers()){
 
                                 System.out.println("Checking answers for CNAME resolution.");
                                 System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
@@ -175,7 +175,7 @@ public class SimpleDNS
                             if(cname) {
                                 List<DNSQuestion> questions = dnsPacket.getQuestions();
                                 questions.get(0).setName(((DNSRdataName) record.getData()).getName());
-                                questions.get(0).setType(DNS.TYPE_CNAME);
+                                //questions.get(0).setType(DNS.TYPE_CNAME);
                                 dnsPacket.setQuestions(questions);
                                 dnsPacket.removeAnswer(record);
 
