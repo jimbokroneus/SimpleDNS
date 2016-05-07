@@ -174,7 +174,8 @@ public class SimpleDNS
                                 System.out.println("resolveCname responded with: " + resolvedCNAMEAnswer);
 
                                 if(resolvedCNAMEAnswer != null) {
-                                    dnsPacketToSendToHost.getAnswers().addAll(resolvedCNAMEAnswer);
+                                    resolvedCNAMEAnswer.addAll(dnsPacketToSendToHost.getAnswers());
+                                    dnsPacketToSendToHost.setAnswers(resolvedCNAMEAnswer);
                                 }
                             }
 
