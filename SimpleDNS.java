@@ -160,11 +160,13 @@ public class SimpleDNS
 
                                 System.out.println("Checking answers for CNAME resolution.");
                                 System.out.println("Name: " + r.getName() + "Data: " + record.getData().toString());
-                                System.exit(0);
+
                                 if(r.getName().equals(record.getData().toString())){
                                     cname = false;
                                 }
                             }
+
+                            System.exit(0);
 
                             if(cname) {
                                 System.out.println("CNAME already resolved, sending to host");
