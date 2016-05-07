@@ -121,6 +121,9 @@ public class SimpleDNS
             if (!dnsPacket.isRecursionDesired()) {
                 System.out.println("No recursion desired");
                 //send to client
+                sendToClient(dnsPacketToSendToHost, returnToSender);
+                run = false;
+
             } else {
                 System.out.println("Recursion");
                 dnsPacket.setQuery(true);
@@ -144,12 +147,12 @@ public class SimpleDNS
 
                     addAdditionalsAndAuths(dnsPacket, dnsPacketToSendToHost);
 
-
+                    //add answers to the return packet
                     for (DNSResourceRecord record : answers) {
                         dnsPacketToSendToHost.addAnswer(record);
                     }
 
-                    //send to client
+                    //send the return packet to client
                     sendToClient(dnsPacketToSendToHost, returnToSender);
 
                     //break while loop
