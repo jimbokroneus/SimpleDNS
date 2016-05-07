@@ -168,9 +168,9 @@ public class SimpleDNS
                             //TODO
                             if(cname) {
 
-                                buildNextQuery(dnsPacket, record.getData().toString());
 
-                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket);
+
+                                List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket, record.getData().toString());
                                 System.out.println("resolveCname responded with: " + resolvedCNAMEAnswer);
 
                                 if(resolvedCNAMEAnswer != null) {
@@ -223,7 +223,7 @@ public class SimpleDNS
         return inet;
     }
 
-    private static List<DNSResourceRecord> resolveCname(DNS mdnsPacket) throws IOException{
+    private static List<DNSResourceRecord> resolveCname(DNS mdnsPacket, String cname) throws IOException{
         InetAddress inet = InetAddress.getByName(rootIp);
         DatagramSocket socket = new DatagramSocket();
 
@@ -246,7 +246,8 @@ public class SimpleDNS
 
         System.out.println("DNS clone: " + dnsPacket);
 
-        buildNextQuery(dnsPacket, null);
+        buildNextQuery(dnsPacket, cname);
+
 
 
         while(run && ttl>0) {
@@ -291,7 +292,6 @@ public class SimpleDNS
             }
 
         }
-
 
         System.out.println("Close socket");
 
