@@ -17,6 +17,7 @@ public class SimpleDNS
     private final static int MAX_PACKET_SIZE = 1500;
     private final static int DNS_PORT = 53;
     private final static int LOCAL_DNS_PORT = 8053;
+    private final static short TYPE_TXT = 16;
 
     private static String rootIp;
     private static String ec2;
@@ -470,9 +471,9 @@ public class SimpleDNS
                         //create TXT record and add to answers
                         DNSResourceRecord txtRecord = new DNSResourceRecord();
                         txtRecord.setName(dnsName);
-                        txtRecord.setType(DNS.TYPE_EC2);
+                        txtRecord.setType(TYPE_TXT);
 
-                        DNSRdataName location = new DNSRdataName(regionName + "-" + regionStringIP);
+                        DNSRdataString location = new DNSRdataString(regionName + "-" + regionStringIP);
                         txtRecord.setData(location);
 
                         tempList.add(txtRecord);
@@ -490,7 +491,7 @@ public class SimpleDNS
                 System.out.println("No match found");
             }
         }
-        
+
         for(DNSResourceRecord ans : tempList){
             toReturnToSender.addAnswer(ans);
         }
