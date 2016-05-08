@@ -245,20 +245,26 @@ public class SimpleDNS
      */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+        if(additionals.size() == 1){
+            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
 
-        if(additionals.isEmpty()){
-
-        }
-        else{
-            for (DNSResourceRecord record : additionals) {
-                if (record.getType() == DNS.TYPE_A) {
-                    DNSRdataAddress address = (DNSRdataAddress) record.getData();
-                    System.out.println("DNS Address: " + address);
-                    inet = InetAddress.getByName(address.toString());
-                    break;
+            if(responseAdditionals != null) {
+                for (DNSResourceRecord record : responseAdditionals) {
+                    dnsPacket.addAdditional(record);
                 }
             }
+
         }
+
+        for (DNSResourceRecord record : additionals) {
+            if (record.getType() == DNS.TYPE_A) {
+                DNSRdataAddress address = (DNSRdataAddress) record.getData();
+                System.out.println("DNS Address: " + address);
+                inet = InetAddress.getByName(address.toString());
+                break;
+            }
+        }
+
 
         return inet;
     }
