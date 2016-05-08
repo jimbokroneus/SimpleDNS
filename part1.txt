@@ -1,0 +1,40 @@
+1a)
+   # DNS lookups: 12
+   # Redundant: 0, none of them are redundant
+
+1b)
+ 	dig +norecurse @a.root-servers.net A org
+	a.root-servers.net
+		org, NS,  d0.org.afilias-nst.org
+		d0.org.afilias-nst.org, A, 199.19.57.1
+		d0.org.afilias-nst.org, AAAA, 2001:500:f::1
+
+	dig +norecurse @d0.org.afilias-nst.org A code.org
+	d0.org.afilias-nst.org
+		code.org, NS, ns-1497.awsdns-59.org
+		ns-1497.awsdns-59.org, A, 205.251.197.217
+	
+	dig +norecurse @ns-1497.awsdns-59.org A www.code.org
+	ns-1497.awsdns-59.org
+		www.code.org, A, 23.23.167.244
+1c)
+	dig +norecurse @ns-1497.awsdns-59.org A code.org
+	ns-1497.awsdns-59.org
+		code.org, A, 52.84.8.105
+
+2a) 
+www.code.org in region us-east-1
+Code.org in region GLOBAL
+
+2b)
+https://cdn.optimizely.com/js/400912536.js resolves to akamai
+
+2c) 
+Amazon CloudFront: 47 requests over 1 connection
+Akamai: 1 request over 1 connection
+Fastly: 1 request over 1 connection
+
+2d) 
+Amazon CloudFront: 43 objects in cache
+Akamai: 0
+Fastly: 1 object in cache
