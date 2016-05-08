@@ -248,16 +248,16 @@ public class SimpleDNS
      */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-//        if(additionals.size() == 1){
-//            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
-//
-//            if(responseAdditionals != null) {
-//                for (DNSResourceRecord record : responseAdditionals) {
-//                    dnsPacket.addAdditional(record);
-//                }
-//            }
-//
-//        }
+        if(additionals.size() == 1){
+            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
+
+            if(responseAdditionals != null) {
+                for (DNSResourceRecord record : responseAdditionals) {
+                    dnsPacket.addAdditional(record);
+                }
+            }
+
+        }
 
         for (DNSResourceRecord record : additionals) {
             if (record.getType() == DNS.TYPE_A) {
@@ -389,7 +389,7 @@ public class SimpleDNS
 
 
 
-        while(run && ttl>0) {
+        while(ttl>0) {
             System.out.println("*************************************Start loop in resolveCname*************************************");
             System.out.println("Sending packet:");
             System.out.println(dnsPacket.toString());
@@ -416,6 +416,7 @@ public class SimpleDNS
             List<DNSResourceRecord> answers = dnsPacket.getAnswers();
             if (answers.size() > 0) {
 
+                //recursively handle more CNAMEs
                 if(answers.get(0).getType() == DNS.TYPE_CNAME){
                     List<DNSResourceRecord> response = resolveCname(dnsPacket, answers.get(0).getData().toString());
                     if(response != null){
