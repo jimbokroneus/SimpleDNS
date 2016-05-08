@@ -248,16 +248,16 @@ public class SimpleDNS
      */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
-        if(additionals.size() == 1){
-            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
-
-            if(responseAdditionals != null) {
-                for (DNSResourceRecord record : responseAdditionals) {
-                    dnsPacket.addAdditional(record);
-                }
-            }
-
-        }
+//        if(additionals.size() == 1){
+//            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
+//
+//            if(responseAdditionals != null) {
+//                for (DNSResourceRecord record : responseAdditionals) {
+//                    dnsPacket.addAdditional(record);
+//                }
+//            }
+//
+//        }
 
         for (DNSResourceRecord record : additionals) {
             if (record.getType() == DNS.TYPE_A) {
