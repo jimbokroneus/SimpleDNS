@@ -415,19 +415,23 @@ public class SimpleDNS
             //add answers and send
             List<DNSResourceRecord> answers = dnsPacket.getAnswers();
             if (answers.size() > 0) {
+
+                if(answers.get(0).getType() == DNS.TYPE_CNAME){
+                    List<DNSResourceRecord> response = resolveCname(dnsPacket, answers.get(0).getData().toString());
+                    if(response != null){
+                        for (DNSResourceRecord r: response){
+                            answers.add(r);
+                        }
+                    }
+                }
+
                 return answers;
             }
 
-            if (run) {
+            buildNextQuery(dnsPacket, null);
 
-                buildNextQuery(dnsPacket, null);
-
-                //decrement ttl
-                ttl--;
-
-                System.out.println("TTL: " + ttl + "Run: " + run);
-            }
-
+            //decrement ttl
+            ttl--;
         }
 
         System.out.println("Close socket");
