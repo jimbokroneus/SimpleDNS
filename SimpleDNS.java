@@ -21,7 +21,7 @@ public class SimpleDNS
     private static String rootIp;
     private static String ec2;
     private static DatagramSocket serverSocket;
-
+    private static ArrayList<String> regions;
     public static void main(String[] args)
     {
         //conventions
@@ -36,7 +36,14 @@ public class SimpleDNS
         rootIp = args[1];
         ec2 = args[3];
 
+        regions = new ArrayList<String>();
+
         try {
+
+            //read the passed in file
+            readEC2File();
+
+
             //establish socket connection
             serverSocket = new DatagramSocket(LOCAL_DNS_PORT);
 
@@ -369,27 +376,28 @@ public class SimpleDNS
         }
     }
 
-    private static void sendToClient(DNS dnsPacket, DatagramPacket returnToSener) throws IOException{
+    private static void sendToClient(DNS dnsPacket, DatagramPacket returnToSender) throws IOException{
 
         //check IPv4 association with EC2 region
-        if(dnsPacket.getQuestions().get(0).getType() == DNS.TYPE_A){
+        DNSQuestion question = dnsPacket.getQuestions().get(0);
+        if(question.getType() == DNS.TYPE_A){
 
             //TODO
-            //check if it is in the region
+            matchPrefix(question.getName(), dnsPacket);
 
         }
 
-        DatagramPacket answer = new DatagramPacket(dnsPacket.serialize(), dnsPacket.getLength(), returnToSener.getSocketAddress());
+        DatagramPacket answer = new DatagramPacket(dnsPacket.serialize(), dnsPacket.getLength(), returnToSender.getSocketAddress());
         serverSocket.send(answer);
         System.out.println("Responded with answer");
     }
 
-    private static void readEC2File(String name) throws IOException{
+    private static void readEC2File() throws IOException{
         FileReader fileReader = null;
         BufferedReader reader = null;
 
         try {
-            fileReader = new FileReader(name);
+            fileReader = new FileReader(ec2);
             reader = new BufferedReader(fileReader);
 
 
@@ -402,9 +410,7 @@ public class SimpleDNS
                     break;
                 }
 
-                String[] ip_location = temp.split(",");
-
-                //TODO: do something with this stuffs
+                regions.add(temp);
 
             }
 
@@ -417,52 +423,72 @@ public class SimpleDNS
 
     }
 
-    private static void matchPrefix(){
-        String[] regions = {"72.44.32.0/19,Virginia","67.202.0.0/18,Virginia", "75.101.128.0/17,Virginia", "54.212.0.0/15,Oregon"};
-        String stringIP = "54.212.0.0";
-        int IP = 0;
+    private static void matchPrefix(String dnsName, DNS toReturnToSender){
+        //String[] regions = {"72.44.32.0/19,Virginia","67.202.0.0/18,Virginia", "75.101.128.0/17,Virginia", "54.212.0.0/15,Oregon"};
 
-        try {
-            IP = ByteBuffer.wrap(InetAddress.getByName(stringIP).getAddress()).getInt();
-        } catch (UnknownHostException e) {
-            System.out.println("Unknown host");
-            System.exit(-1);
-        }
 
-        boolean done = false;
+        for(DNSResourceRecord answer : toReturnToSender.getAnswers()) {
 
-        for(int i = 0; i < regions.length && !done; i++) {
-            int ipIndex = regions[i].indexOf('/');
-            int nameIndex = regions[i].indexOf(',');
-            String regionStringIP = regions[i].substring(0, ipIndex);
-            String regionName = regions[i].substring(nameIndex + 1);
+            if(answer.getType() != DNS.TYPE_A){
+                continue;
+            }
+            
+            String stringIP = answer.getData().toString();
+            int IP = 0;
 
             try {
-                int regionIP = ByteBuffer.wrap(InetAddress.getByName(regionStringIP).getAddress()).getInt();
-
-                //Get prefix length
-                int prefixLen = Integer.parseInt(regions[i].substring(ipIndex + 1, nameIndex));
-
-                //Create a mask
-                long prefixMask = 0;
-                for (int j = 32 - prefixLen; j < 32; j++) {
-                    prefixMask += (1L << j);
-                }
-
-                if ((IP & prefixMask) == regionIP) {
-                    //MATCH FOUND!!!!!!!!!!!
-                    System.out.println("Match found for region: " + regionName);
-                    done = true;
-                }
-
+                IP = ByteBuffer.wrap(InetAddress.getByName(stringIP).getAddress()).getInt();
             } catch (UnknownHostException e) {
-                System.out.println("Unknown region host");
+                System.out.println("Unknown host");
+                System.exit(-1);
+            }
+
+            boolean done = false;
+
+            for (int i = 0; i < regions.size() && !done; i++) {
+                int ipIndex = regions.get(i).indexOf('/');
+                int nameIndex = regions.get(i).indexOf(',');
+                String regionStringIP = regions.get(i).substring(0, ipIndex);
+                String regionName = regions.get(i).substring(nameIndex + 1);
+
+                try {
+                    int regionIP = ByteBuffer.wrap(InetAddress.getByName(regionStringIP).getAddress()).getInt();
+
+                    //Get prefix length
+                    int prefixLen = Integer.parseInt(regions.get(i).substring(ipIndex + 1, nameIndex));
+
+                    //Create a mask
+                    long prefixMask = 0;
+                    for (int j = 32 - prefixLen; j < 32; j++) {
+                        prefixMask += (1L << j);
+                    }
+
+                    if ((IP & prefixMask) == regionIP) {
+                        //MATCH FOUND!!!!!!!!!!!
+                        System.out.println("Match found for region: " + regionName);
+
+                        //create TXT record and add to answers
+                        DNSResourceRecord txtRecord = new DNSResourceRecord();
+                        txtRecord.setName(dnsName);
+                        txtRecord.setType(DNS.TYPE_EC2);
+
+                        DNSRdataName location = new DNSRdataName(regionName + "-" + regionStringIP);
+                        txtRecord.setData(location);
+
+                        toReturnToSender.addAnswer(txtRecord);
+
+                        done = true;
+                    }
+
+                } catch (UnknownHostException e) {
+                    System.out.println("Unknown region host");
+                }
+            }
+
+
+            if (!done) {
+                System.out.println("No match found");
             }
         }
-
-        if (!done) {
-            System.out.println("No match found");
-        }
-
     }
 }
