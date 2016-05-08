@@ -19,16 +19,40 @@ public class SimpleDNS
     private final static int LOCAL_DNS_PORT = 8053;
     private final static short TYPE_TXT = 16;
 
+    /**
+     * The Root DNS Server IP
+     */
     private static String rootIp;
+
+    /**
+     * Name of the ec2 file
+     */
     private static String ec2;
+
+    /**
+     * The main dns server socket
+     */
     private static DatagramSocket serverSocket;
+
+    /**
+     * Holds region values read in from the passed in EC2 file
+     */
     private static ArrayList<String> regions;
+
+    //using this for our issues
+    private static List<DNSResourceRecord> originalAdditionals;
+
+
+    /**
+     * Runs a simple DNS server
+     * @param args "Usage: -r <root server ip> -e <ec2 csv>"
+     */
     public static void main(String[] args)
     {
-        //conventions
         System.out.println("Hello, DNS!");
         boolean run = true;
 
+        //parse and validate args
         if (args.length != 4){
             System.out.println("Usage: -r <root server ip> -e <ec2 csv>");
             System.exit(-1);
@@ -36,7 +60,6 @@ public class SimpleDNS
 
         rootIp = args[1];
         ec2 = args[3];
-
         regions = new ArrayList<String>();
 
         try {
@@ -49,9 +72,6 @@ public class SimpleDNS
             serverSocket = new DatagramSocket(LOCAL_DNS_PORT);
 
             while(run) {
-
-
-
 
                 //get datagram packet
                 byte[] buff = new byte[MAX_PACKET_SIZE];
@@ -69,7 +89,6 @@ public class SimpleDNS
                     int type = question.getType();
 
                     if(type == DNS.TYPE_A || type == DNS.TYPE_AAAA || type == DNS.TYPE_CNAME || type == DNS.TYPE_NS) {
-                        //TODO: double check
                         handlePacket(dnsPacket, packet);
                     }
                     else{
@@ -87,7 +106,7 @@ public class SimpleDNS
         serverSocket.close();
     }
 
-    private static List<DNSResourceRecord> originalAdditionals;
+
     /**
      * Handles Packets in a recursive manner.
      * It handles single question cases.
@@ -115,8 +134,9 @@ public class SimpleDNS
         originalAdditionals.addAll(dnsPacket.getAdditional());
 
         while(run && ttl>0) {
-            System.out.println("Start loop***************************************************************");
-            System.out.println("Sending packet: " + inet);
+
+            System.out.println("*****************************************Start loop*****************************************");
+            System.out.println("Sending packet: ");
             System.out.println(dnsPacket.toString());
 
             //Send Packet
@@ -151,13 +171,14 @@ public class SimpleDNS
                 if (answers.size() > 0) {
 
                     addAdditionalsAndAuths(dnsPacket, dnsPacketToSendToHost);
+                    short questionType = dnsPacket.getQuestions().get(0).getType();
 
                     //loop through all recorded answers checking for unresolved CNAMEs
                     for (DNSResourceRecord record : answers) {
 
                         dnsPacketToSendToHost.addAnswer(record);
 
-                        if(record.getType() == DNS.TYPE_CNAME){
+                        if(record.getType() == DNS.TYPE_CNAME && questionType !=  DNS.TYPE_CNAME){
                             System.out.println("Answer was a CNAME. Checking if CNAME was resolved.");
 
                             cname = true;
@@ -173,11 +194,7 @@ public class SimpleDNS
                                 }
                             }
 
-                            //TODO
                             if(cname) {
-
-
-
                                 List<DNSResourceRecord> resolvedCNAMEAnswer = resolveCname(dnsPacket, record.getData().toString());
                                 System.out.println("resolveCname responded with: " + resolvedCNAMEAnswer);
 
@@ -197,7 +214,6 @@ public class SimpleDNS
                     //break while loop
                     run = false;
 
-
                 }
             }
 
@@ -206,8 +222,6 @@ public class SimpleDNS
             if(run) {
 
                 buildNextQuery(dnsPacket, null);
-
-                //System.out.println(dnsPacket.toString());
 
                 //decrement ttl
                 ttl--;
@@ -221,6 +235,14 @@ public class SimpleDNS
         socket.close();
     }
 
+    /**
+     * Parses through the dnsPacket additionals, to select the next server to query
+     *
+     * @param dnsPacket the dns packet to parse
+     * @param inet the inet to set (IP from the record)
+     * @return inet
+     * @throws IOException
+     */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         for (DNSResourceRecord record : dnsPacket.getAdditional()) {
             if (record.getType() == DNS.TYPE_A) {
@@ -233,6 +255,13 @@ public class SimpleDNS
         return inet;
     }
 
+    /**
+     * Handles CNAME queries
+     * @param mdnsPacket the packet containing the CNAME Answer
+     * @param cname the url related the the CNAME
+     * @return a list of resolved CNAME answers
+     * @throws IOException
+     */
     private static List<DNSResourceRecord> resolveCname(DNS mdnsPacket, String cname) throws IOException{
         InetAddress inet = InetAddress.getByName(rootIp);
         DatagramSocket socket = new DatagramSocket();
@@ -261,7 +290,7 @@ public class SimpleDNS
 
 
         while(run && ttl>0) {
-            System.out.println("Start loop in resolveCname***************************************************************");
+            System.out.println("*************************************Start loop in resolveCname*************************************");
             System.out.println("Sending packet:");
             System.out.println(dnsPacket.toString());
 
@@ -289,11 +318,9 @@ public class SimpleDNS
                 return answers;
             }
 
-
             if (run) {
 
                 buildNextQuery(dnsPacket, null);
-                //System.out.println(dnsPacket.toString());
 
                 //decrement ttl
                 ttl--;
@@ -310,6 +337,11 @@ public class SimpleDNS
         return null;
     }
 
+    /**
+     * Sets up the dns packet for its next recursion
+     * @param dnsPacket dns packet to prepare
+     * @param cname the url of the cname we are querying.  Null if we are not querying a cname
+     */
     private static void buildNextQuery(DNS dnsPacket, String cname) {
         System.out.println("Preparing the next query");
 
@@ -357,6 +389,11 @@ public class SimpleDNS
 
     }
 
+    /**
+     * Adds all additionals and authorities to the specified packet
+     * @param dnsPacket the packet we want to get the adds/auths from
+     * @param dnsPacketToSendToHost the packet to add the adds/auths to
+     */
     private static void addAdditionalsAndAuths(DNS dnsPacket, DNS dnsPacketToSendToHost){
         //add additionals
         List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
@@ -377,6 +414,12 @@ public class SimpleDNS
         }
     }
 
+    /**
+     * Sends a packet to the original sender
+     * @param dnsPacket dns packet to send
+     * @param returnToSender datagram packet to send
+     * @throws IOException
+     */
     private static void sendToClient(DNS dnsPacket, DatagramPacket returnToSender) throws IOException{
 
         //check IPv4 association with EC2 region
@@ -393,6 +436,12 @@ public class SimpleDNS
         System.out.println("Responded with answer");
     }
 
+    /**
+     * Reads the specified file to get EC2 regions
+     * The read values will be stored in the regions array list
+     *
+     * @throws IOException
+     */
     private static void readEC2File() throws IOException{
         FileReader fileReader = null;
         BufferedReader reader = null;
@@ -424,6 +473,13 @@ public class SimpleDNS
 
     }
 
+    /**
+     * Searches for a best mach between the IP prefix and EC2 regions.
+     * Adds the TXT answer to the toReturnToSender packet's answers list.
+     *
+     * @param dnsName dns packet we are trying to match
+     * @param toReturnToSender dns pacekt that will be returned to the sender
+     */
     private static void matchPrefix(String dnsName, DNS toReturnToSender){
         //String[] regions = {"72.44.32.0/19,Virginia","67.202.0.0/18,Virginia", "75.101.128.0/17,Virginia", "54.212.0.0/15,Oregon"};
 
