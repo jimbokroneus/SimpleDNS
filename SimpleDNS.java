@@ -426,13 +426,13 @@ public class SimpleDNS
     private static void matchPrefix(String dnsName, DNS toReturnToSender){
         //String[] regions = {"72.44.32.0/19,Virginia","67.202.0.0/18,Virginia", "75.101.128.0/17,Virginia", "54.212.0.0/15,Oregon"};
 
-
+        List<DNSResourceRecord> tempList = new ArrayList<DNSResourceRecord>();
         for(DNSResourceRecord answer : toReturnToSender.getAnswers()) {
 
             if(answer.getType() != DNS.TYPE_A){
                 continue;
             }
-            
+
             String stringIP = answer.getData().toString();
             int IP = 0;
 
@@ -475,7 +475,7 @@ public class SimpleDNS
                         DNSRdataName location = new DNSRdataName(regionName + "-" + regionStringIP);
                         txtRecord.setData(location);
 
-                        toReturnToSender.addAnswer(txtRecord);
+                        tempList.add(txtRecord);
 
                         done = true;
                     }
@@ -490,5 +490,10 @@ public class SimpleDNS
                 System.out.println("No match found");
             }
         }
+        
+        for(DNSResourceRecord ans : tempList){
+            toReturnToSender.addAnswer(ans);
+        }
+
     }
 }
