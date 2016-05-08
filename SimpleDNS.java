@@ -333,6 +333,17 @@ public class SimpleDNS
             //add answers and send
             List<DNSResourceRecord> answers = dnsPacket.getAnswers();
             if (answers.size() > 0) {
+
+                if(answers.get(0).getType() == DNS.TYPE_CNAME){
+                    System.out.println("CNAME found for recursive additionals case*******************************");
+                    List<DNSResourceRecord> response = resolveCname(dnsPacket, answers.get(0).getData().toString());
+                    if(response != null){
+                        for (DNSResourceRecord r: response){
+                            answers.add(r);
+                        }
+                    }
+                }
+
                 return answers;
             }
 
