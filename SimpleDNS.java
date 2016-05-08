@@ -153,6 +153,9 @@ public class SimpleDNS
             if (!dnsPacket.isRecursionDesired()) {
                 System.out.println("No recursion desired");
 
+                //add auths and additionals
+                addAdditionalsAndAuths(dnsPacket, dnsPacketToSendToHost);
+
                 //send to client
                 sendToClient(dnsPacketToSendToHost, returnToSender);
                 run = false;
