@@ -12,6 +12,16 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A basic local DNS server
+ *
+ * @Bugs:
+ * When a packet is resolved with no additionals, it just returns the current packet
+ *  -we had started the code to handle this case, as outlined in the commented-out section in selectNextServer() and
+ *   the resolveAdditional() method
+ *  -we believe it has something to do with too much recursion, and possibly some overlapping.
+ *
+ */
 public class SimpleDNS
 {
     private final static int MAX_PACKET_SIZE = 1500;
@@ -52,7 +62,8 @@ public class SimpleDNS
         System.out.println("Hello, DNS!");
         boolean run = true;
 
-        //parse and validate args
+        //Pare the Agruments: we assume that the parameters are passed in correctly
+        // since we are using a makefile, and only do minimal usage checking
         if (args.length != 4){
             System.out.println("Usage: -r <root server ip> -e <ec2 csv>");
             System.exit(-1);
@@ -60,6 +71,8 @@ public class SimpleDNS
 
         rootIp = args[1];
         ec2 = args[3];
+
+        //initialize regions
         regions = new ArrayList<String>();
 
         try {
@@ -248,6 +261,8 @@ public class SimpleDNS
      */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
         List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+
+        //THIS IS THE CASE WE COULD NOT HANDLE
 //        if(additionals.size() == 1){
 //            List<DNSResourceRecord> responseAdditionals = resolveAdditional(dnsPacket);
 //
@@ -272,6 +287,14 @@ public class SimpleDNS
         return inet;
     }
 
+    /**
+     * Handles the case where there are no additionals for the authorities.
+     * This method does a recursive search using an authority as a question.
+     *
+     * @param mdnsPacket the packet containg the authorities with no additionals
+     * @return a list of answers containing addditionals for the authorities from the passed in packet
+     * @throws IOException
+     */
     private static List<DNSResourceRecord> resolveAdditional(DNS mdnsPacket) throws IOException{
         InetAddress inet = InetAddress.getByName(rootIp);
         DatagramSocket socket = new DatagramSocket();
@@ -292,6 +315,7 @@ public class SimpleDNS
         questions.add(new DNSQuestion(authorities.get(0).getData().toString(), DNS.TYPE_A));
         dnsPacket.setQuestions(questions);
 
+        //build the rest of the packet
         dnsPacket.setQuestions(mdnsPacket.getQuestions());
         dnsPacket.setAdditional(originalAdditionals);
         dnsPacket.setId(mdnsPacket.getId());
@@ -303,11 +327,7 @@ public class SimpleDNS
 
         System.out.println("DNS clone: " + dnsPacket);
 
-        //buildNextQuery(dnsPacket, null);
-
-
-
-        while(run && ttl>0) {
+        while(ttl>0) {
             System.out.println("*************************************Start loop in resolveAdditional*************************************");
             System.out.println("Sending packet:");
             System.out.println(dnsPacket.toString());
@@ -334,6 +354,7 @@ public class SimpleDNS
             List<DNSResourceRecord> answers = dnsPacket.getAnswers();
             if (answers.size() > 0) {
 
+                //resolve cnames.  This should be handled by the main loop anyway
 //                if(answers.get(0).getType() == DNS.TYPE_CNAME){
 //                    System.out.println("CNAME found for recursive additionals case*******************************");
 //                    List<DNSResourceRecord> response = resolveCname(dnsPacket, answers.get(0).getData().toString());
