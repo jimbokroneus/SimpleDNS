@@ -244,15 +244,106 @@ public class SimpleDNS
      * @throws IOException
      */
     private static InetAddress selectNextServer(DNS dnsPacket, InetAddress inet) throws IOException {
-        for (DNSResourceRecord record : dnsPacket.getAdditional()) {
-            if (record.getType() == DNS.TYPE_A) {
-                DNSRdataAddress address = (DNSRdataAddress) record.getData();
-                System.out.println("DNS Address: " + address);
-                inet = InetAddress.getByName(address.toString());
-                break;
+        List<DNSResourceRecord> additionals = dnsPacket.getAdditional();
+
+        if(additionals.isEmpty()){
+
+        }
+        else{
+            for (DNSResourceRecord record : additionals) {
+                if (record.getType() == DNS.TYPE_A) {
+                    DNSRdataAddress address = (DNSRdataAddress) record.getData();
+                    System.out.println("DNS Address: " + address);
+                    inet = InetAddress.getByName(address.toString());
+                    break;
+                }
             }
         }
+
         return inet;
+    }
+
+    private static List<DNSResourceRecord> resolveAdditional(DNS mdnsPacket) throws IOException{
+        InetAddress inet = InetAddress.getByName(rootIp);
+        DatagramSocket socket = new DatagramSocket();
+
+        byte buff[] = new byte[MAX_PACKET_SIZE];
+        boolean run = true;
+        int ttl = 100;
+
+        System.out.println(inet);
+        //System.out.println(socket.getRemoteSocketAddress().toString());
+
+
+        DNS dnsPacket = new DNS();
+
+        //get authority from mdns
+        List<DNSResourceRecord> authorities = mdnsPacket.getAuthorities();
+        List<DNSQuestion> questions = new ArrayList<DNSQuestion>();
+        questions.add(new DNSQuestion(authorities.get(0).getData().toString(), DNS.TYPE_A));
+        dnsPacket.setQuestions(questions);
+
+        dnsPacket.setQuestions(mdnsPacket.getQuestions());
+        dnsPacket.setAdditional(originalAdditionals);
+        dnsPacket.setId(mdnsPacket.getId());
+        dnsPacket.setOpcode(mdnsPacket.getOpcode());
+        dnsPacket.setRcode(mdnsPacket.getRcode());
+        dnsPacket.setQuery(true);
+        dnsPacket.setRecursionDesired(true);
+        dnsPacket.setRecursionAvailable(true);
+
+        System.out.println("DNS clone: " + dnsPacket);
+
+        //buildNextQuery(dnsPacket, null);
+
+
+
+        while(run && ttl>0) {
+            System.out.println("*************************************Start loop in resolveAdditional*************************************");
+            System.out.println("Sending packet:");
+            System.out.println(dnsPacket.toString());
+
+            //Send Packet
+            DatagramPacket nQuery = new DatagramPacket(dnsPacket.serialize(), 0, dnsPacket.getLength(), inet, DNS_PORT);
+            socket.send(nQuery);
+
+            //wait for the packet to be returned
+            socket.receive(new DatagramPacket(buff, buff.length));
+            dnsPacket = DNS.deserialize(buff, buff.length);
+
+            System.out.println("Recieved packet: " + dnsPacket.toString());
+
+
+            System.out.println("Recursion Desired");
+            dnsPacket.setQuery(true);
+
+            //select next server to send request to
+            inet = selectNextServer(dnsPacket, inet);
+
+
+            //add answers and send
+            List<DNSResourceRecord> answers = dnsPacket.getAnswers();
+            if (answers.size() > 0) {
+                return answers;
+            }
+
+            if (run) {
+
+                buildNextQuery(dnsPacket, null);
+
+                //decrement ttl
+                ttl--;
+
+                System.out.println("TTL: " + ttl + "Run: " + run);
+            }
+
+        }
+
+        System.out.println("Close socket");
+
+        socket.close();
+
+        return null;
     }
 
     /**
